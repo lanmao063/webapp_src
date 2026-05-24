@@ -104,18 +104,17 @@ public class StatisticsServiceImpl implements StatisticsService {
     @Override
     public Map<String, Object> getCourierOverview(Long courierId) {
         Map<String, Object> stats = new LinkedHashMap<>();
-        Long pendingPickups = sendPackageMapper.selectCount(
-                new QueryWrapper<SendPackage>().eq("status", "PAID"));
         Long todayCollected = sendPackageMapper.selectCount(
                 new QueryWrapper<SendPackage>()
                         .eq("status", "COLLECTED")
+                        .eq("courier_id", courierId)
                         .ge("updated_at", LocalDate.now().toString()));
         Long todayWarehoused = inboundPackageMapper.selectCount(
                 new QueryWrapper<InboundPackage>()
                         .eq("status", "IN_WAREHOUSE")
+                        .eq("entered_by", courierId)
                         .ge("enter_time", LocalDate.now().toString()));
 
-        stats.put("pendingPickups", pendingPickups);
         stats.put("todayDeliveries", todayCollected);
         stats.put("todayWarehoused", todayWarehoused);
         return stats;

@@ -9,7 +9,7 @@ import java.util.Map;
 
 public interface InboundPackageService extends IService<InboundPackage> {
 
-    void warehouseEntry(String trackingNumber, Long courierId);
+    String warehouseEntry(String trackingNumber, Long courierId);
 
     void checkout(String trackingNumber, Long userId);
 

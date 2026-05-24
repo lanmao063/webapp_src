@@ -31,7 +31,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
 
     @Override
     @Transactional
-    public void warehouseEntry(String trackingNumber, Long courierId) {
+    public String warehouseEntry(String trackingNumber, Long courierId) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
         if (pkg == null) {
@@ -73,6 +73,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         inbound.setEnteredBy(courierId);
         inbound.setEnterTime(LocalDateTime.now());
         baseMapper.updateById(inbound);
+        return pickupCode;
     }
 
     @Override
@@ -89,17 +90,24 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
             throw new BusinessException("该包裹未入库");
         }
         if (!"IN_WAREHOUSE".equals(inbound.getStatus())) {
-            throw new BusinessException("该包裹已出库");
+            if ("CHECKED_OUT".equals(inbound.getStatus())) {
+                throw new BusinessException("该包裹已出库");
+            }
+            throw new BusinessException("该包裹未入库，请先完成入库操作");
         }
 
         SystemUser user = systemUserMapper.selectById(userId);
-        if (user != null && user.getPhone() != null && pkg.getReceiverPhone() != null) {
-            String userPhone = user.getPhone();
-            String receiverPhone = pkg.getReceiverPhone();
-            String proxyPhone = inbound.getProxyPhone();
-            if (!userPhone.equals(receiverPhone) && !userPhone.equals(proxyPhone)) {
-                throw new BusinessException("该包裹收件人手机号与您的手机号不匹配，这不是您的包裹");
-            }
+        if (user == null || user.getPhone() == null) {
+            throw new BusinessException("用户信息异常，无法验证取件权限");
+        }
+        if (pkg.getReceiverPhone() == null) {
+            throw new BusinessException("该包裹收件人信息缺失，无法验证取件权限");
+        }
+        String userPhone = user.getPhone();
+        String receiverPhone = pkg.getReceiverPhone();
+        String proxyPhone = inbound.getProxyPhone();
+        if (!userPhone.equals(receiverPhone) && !userPhone.equals(proxyPhone)) {
+            throw new BusinessException("该包裹收件人手机号与您的手机号不匹配，这不是您的包裹");
         }
 
         inbound.setStatus("CHECKED_OUT");

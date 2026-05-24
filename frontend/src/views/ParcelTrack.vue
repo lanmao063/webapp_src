@@ -30,14 +30,12 @@
         <el-descriptions-item label="状态">
           <el-tag v-if="parcel.inboundStatus === 'IN_WAREHOUSE'" type="warning" size="small">在库</el-tag>
           <el-tag v-else-if="parcel.inboundStatus === 'CHECKED_OUT'" type="success" size="small">已出库</el-tag>
-          <span v-else style="color:#909399;">运输中</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="寄件状态" v-if="parcel.sendStatus">
-          <el-tag v-if="parcel.sendStatus === 'PENDING'" type="info" size="small">待审核</el-tag>
-          <el-tag v-else-if="parcel.sendStatus === 'APPROVED'" type="warning" size="small">待付款</el-tag>
+          <el-tag v-else-if="parcel.sendStatus === 'COLLECTED'" type="primary" size="small">运输中</el-tag>
           <el-tag v-else-if="parcel.sendStatus === 'PAID'" type="warning" size="small">待揽收</el-tag>
-          <el-tag v-else-if="parcel.sendStatus === 'COLLECTED'" type="success" size="small">已揽收</el-tag>
+          <el-tag v-else-if="parcel.sendStatus === 'APPROVED'" type="warning" size="small">待付款</el-tag>
+          <el-tag v-else-if="parcel.sendStatus === 'SUBMITTED'" type="info" size="small">已提交</el-tag>
           <el-tag v-else-if="parcel.sendStatus === 'REJECTED'" type="danger" size="small">已驳回</el-tag>
+          <span v-else style="color:#909399;">运输中</span>
         </el-descriptions-item>
         <el-descriptions-item label="入库时间">{{ parcel.enterTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="取件时间">{{ parcel.outTime || '-' }}</el-descriptions-item>

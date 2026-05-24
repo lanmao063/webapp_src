@@ -18,6 +18,7 @@ public class SendPackage {
     private String appointmentTime;
     private String status;
     private Long createdBy;
+    private Long courierId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -59,6 +60,8 @@ public class SendPackage {
     public void setStatus(String status) { this.status = status; }
     public Long getCreatedBy() { return createdBy; }
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
+    public Long getCourierId() { return courierId; }
+    public void setCourierId(Long courierId) { this.courierId = courierId; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }

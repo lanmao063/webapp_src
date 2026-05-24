@@ -21,7 +21,7 @@ public interface SendPackageService extends IService<SendPackage> {
 
     void pay(Long id, Long userId);
 
-    IPage<SendPackage> paidList(int page, int size);
+    IPage<SendPackage> paidList(Long courierId, int page, int size);
 
     void collect(Long id, Long courierId);
 }

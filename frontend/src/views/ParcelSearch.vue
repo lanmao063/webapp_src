@@ -19,23 +19,46 @@
 
     <el-card class="table-card" shadow="never">
       <el-table :data="tableData" stripe border style="width: 100%;">
-        <el-table-column prop="trackingNumber" label="快递单号" min-width="160" />
+        <el-table-column prop="trackingNumber" label="快递单号" min-width="160">
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.trackingNumber, searchForm.keyword)" />
+          </template>
+        </el-table-column>
         <el-table-column prop="senderName" label="寄件人" width="100">
-          <template #default="{ row }">{{ row.senderName || '-' }}</template>
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.senderName, searchForm.keyword)" />
+          </template>
         </el-table-column>
         <el-table-column prop="senderPhone" label="寄件手机号" width="130">
-          <template #default="{ row }">{{ row.senderPhone || '-' }}</template>
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.senderPhone, searchForm.keyword)" />
+          </template>
         </el-table-column>
-        <el-table-column prop="receiverName" label="收件人" width="100" />
-        <el-table-column prop="receiverPhone" label="收件人手机号" width="130" />
+        <el-table-column prop="receiverName" label="收件人" width="100">
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.receiverName, searchForm.keyword)" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="receiverPhone" label="收件人手机号" width="130">
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.receiverPhone, searchForm.keyword)" />
+          </template>
+        </el-table-column>
         <el-table-column prop="pickupCode" label="取件码" width="120">
-          <template #default="{ row }">{{ row.pickupCode || '-' }}</template>
+          <template #default="{ row }">
+            <span v-html="highlightMatch(row.pickupCode, searchForm.keyword)" />
+          </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
             <el-tag v-if="row.status === 'IN_WAREHOUSE'" type="warning" size="small">在库</el-tag>
             <el-tag v-else-if="row.status === 'CHECKED_OUT'" type="success" size="small">已出库</el-tag>
-            <span v-else style="color:#909399;">-</span>
+            <el-tag v-else-if="row.sendStatus === 'COLLECTED'" type="primary" size="small">运输中</el-tag>
+            <el-tag v-else-if="row.sendStatus === 'PAID'" type="warning" size="small">待揽收</el-tag>
+            <el-tag v-else-if="row.sendStatus === 'APPROVED'" type="warning" size="small">待付款</el-tag>
+            <el-tag v-else-if="row.sendStatus === 'SUBMITTED'" type="info" size="small">已提交</el-tag>
+            <el-tag v-else-if="row.sendStatus === 'REJECTED'" type="danger" size="small">已驳回</el-tag>
+            <span v-else style="color:#909399;">运输中</span>
           </template>
         </el-table-column>
         <el-table-column prop="enterTime" label="入库时间" width="160">
@@ -67,10 +90,16 @@ const tableData = ref([])
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
 const fetchData = async () => {
+  const kw = searchForm.keyword.trim()
+  if (!kw) {
+    tableData.value = []
+    pagination.total = 0
+    return
+  }
   try {
     const res = await request.get('/package/search', {
       params: {
-        keyword: searchForm.keyword,
+        keyword: kw,
         page: pagination.currentPage,
         size: pagination.pageSize
       }
@@ -80,9 +109,21 @@ const fetchData = async () => {
   } catch {}
 }
 
+const escapeHtml = (text) => {
+  if (!text) return ''
+  return String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+const highlightMatch = (text, keyword) => {
+  if (!text || !keyword) return escapeHtml(text) || '-'
+  const escaped = escapeHtml(String(text))
+  const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escapedKeyword})`, 'gi')
+  return escaped.replace(regex, '<mark class="highlight">$1</mark>')
+}
+
 const handleSearch = () => { pagination.currentPage = 1; fetchData() }
-const handleReset = () => { searchForm.keyword = ''; handleSearch() }
-fetchData()
+const handleReset = () => { searchForm.keyword = ''; tableData.value = []; pagination.total = 0 }
 </script>
 
 <style scoped>
@@ -90,4 +131,10 @@ fetchData()
 .breadcrumb { margin-bottom: 16px; }
 .search-card { margin-bottom: 16px; }
 .pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+:deep(.highlight) {
+  background-color: #fff3cd;
+  color: #856404;
+  padding: 0 2px;
+  border-radius: 2px;
+}
 </style>

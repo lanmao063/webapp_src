@@ -62,27 +62,19 @@
 
     <!-- COURIER: 快递员 - 统计卡片 -->
     <template v-if="role === 'COURIER'">
-      <el-row :gutter="20" style="width:100%;max-width:800px;margin-bottom:20px;" v-if="stats.pendingPickups > 0">
+      <el-row :gutter="20" style="width:100%;max-width:600px;margin-bottom:20px;" v-if="pendingCollectCount > 0">
         <el-col :span="24">
           <el-card shadow="hover" class="hint-card" @click="$router.push('/PickupQuery')">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:15px;">您有 <strong style="color:#e6a23c;">{{ stats.pendingPickups }}</strong> 件待揽收包裹</span>
+              <span style="font-size:15px;">您有 <strong style="color:#e6a23c;">{{ pendingCollectCount }}</strong> 笔待揽收订单</span>
               <el-button type="warning" size="small" @click.stop="$router.push('/PickupQuery')">去揽收</el-button>
             </div>
           </el-card>
         </el-col>
       </el-row>
       <h1>工作台</h1>
-      <el-row :gutter="20" style="margin-top: 20px; width: 100%; max-width: 800px;">
-        <el-col :span="8">
-          <el-card shadow="hover">
-            <div style="text-align:center;">
-              <p style="color:#909399;font-size:14px;">待揽收</p>
-              <h2 style="color:#e6a23c;">{{ stats.pendingPickups }}</h2>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="8">
+      <el-row :gutter="20" style="margin-top: 20px; width: 100%; max-width: 600px;">
+        <el-col :span="12">
           <el-card shadow="hover">
             <div style="text-align:center;">
               <p style="color:#909399;font-size:14px;">今日揽收</p>
@@ -90,7 +82,7 @@
             </div>
           </el-card>
         </el-col>
-        <el-col :span="8">
+        <el-col :span="12">
           <el-card shadow="hover">
             <div style="text-align:center;">
               <p style="color:#909399;font-size:14px;">今日入库</p>
@@ -159,7 +151,8 @@ const role = ref(user?.role || '')
 const pickupList = ref([])
 const unpaidCount = ref(0)
 const pendingApprovalCount = ref(0)
-const stats = reactive({ pendingPickups: 0, todayDeliveries: 0, todayWarehoused: 0 })
+const pendingCollectCount = ref(0)
+const stats = reactive({ todayDeliveries: 0, todayWarehoused: 0 })
 
 const cards = reactive([
   { label: '在库包裹', value: 0, color: '#e6a23c' },
@@ -225,6 +218,9 @@ onMounted(() => {
   } else if (role.value === 'COURIER') {
     request.get('/statistics/courier-overview').then(res => {
       Object.assign(stats, res.data)
+    }).catch(() => {})
+    request.get('/send-package/paid-list', { params: { page: 1, size: 1 } }).then(res => {
+      pendingCollectCount.value = res.data.total || 0
     }).catch(() => {})
   } else if (role.value === 'MANAGER') {
     request.get('/statistics/overview').then(res => {

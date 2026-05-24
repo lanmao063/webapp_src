@@ -7,9 +7,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.neu.webapp.dto.SendPackageRequest;
 import com.neu.webapp.entity.Package;
 import com.neu.webapp.entity.SendPackage;
+import com.neu.webapp.entity.SystemUser;
 import com.neu.webapp.exception.BusinessException;
 import com.neu.webapp.mapper.PackageMapper;
 import com.neu.webapp.mapper.SendPackageMapper;
+import com.neu.webapp.mapper.SystemUserMapper;
 import com.neu.webapp.service.SendPackageService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +24,11 @@ import java.util.UUID;
 public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendPackage> implements SendPackageService {
 
     private final PackageMapper packageMapper;
+    private final SystemUserMapper systemUserMapper;
 
-    public SendPackageServiceImpl(PackageMapper packageMapper) {
+    public SendPackageServiceImpl(PackageMapper packageMapper, SystemUserMapper systemUserMapper) {
         this.packageMapper = packageMapper;
+        this.systemUserMapper = systemUserMapper;
     }
 
     @Override
@@ -50,7 +54,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         sp.setPickupMethod(request.getPickupMethod());
         sp.setAppointmentTime(request.getAppointmentTime());
         sp.setCreatedBy(userId);
-        sp.setStatus("PENDING");
+        sp.setStatus("SUBMITTED");
         sp.setIsPaid(0);
         sp.setFee(calculateFee(pkg.getWeight()));
         baseMapper.insert(sp);
@@ -90,7 +94,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     @Override
     public IPage<SendPackage> pendingList(int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", "PENDING").orderByDesc("created_at");
+        wrapper.eq("status", "SUBMITTED").orderByDesc("created_at");
         IPage<SendPackage> result = baseMapper.selectPage(new Page<>(page, size), wrapper);
         result.getRecords().forEach(this::fillPackageFields);
         return result;
@@ -103,7 +107,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         if (sp == null) {
             throw new BusinessException("订单不存在");
         }
-        if (!"PENDING".equals(sp.getStatus())) {
+        if (!"SUBMITTED".equals(sp.getStatus())) {
             throw new BusinessException("订单状态不是待审核");
         }
         if (updateData.getFee() != null) {
@@ -116,6 +120,13 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
             sp.setAppointmentTime(updateData.getAppointmentTime());
         }
         sp.setStatus("APPROVED");
+        // 自动分配快递员
+        java.util.List<SystemUser> couriers = systemUserMapper.selectList(
+                new QueryWrapper<SystemUser>().eq("role", "COURIER").eq("status", 1));
+        if (!couriers.isEmpty()) {
+            int index = (int)(Math.random() * couriers.size());
+            sp.setCourierId(couriers.get(index).getId());
+        }
         baseMapper.updateById(sp);
     }
 
@@ -125,7 +136,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         if (sp == null) {
             throw new BusinessException("订单不存在");
         }
-        if (!"PENDING".equals(sp.getStatus())) {
+        if (!"SUBMITTED".equals(sp.getStatus())) {
             throw new BusinessException("订单状态不是待审核");
         }
         sp.setStatus("REJECTED");
@@ -160,9 +171,9 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     @Override
-    public IPage<SendPackage> paidList(int page, int size) {
+    public IPage<SendPackage> paidList(Long courierId, int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
-        wrapper.eq("status", "PAID").orderByDesc("created_at");
+        wrapper.eq("status", "PAID").eq("courier_id", courierId).orderByDesc("created_at");
         IPage<SendPackage> result = baseMapper.selectPage(new Page<>(page, size), wrapper);
         result.getRecords().forEach(this::fillPackageFields);
         return result;
@@ -177,6 +188,9 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         }
         if (!"PAID".equals(sp.getStatus())) {
             throw new BusinessException("订单状态不是待揽收");
+        }
+        if (sp.getCourierId() == null || !sp.getCourierId().equals(courierId)) {
+            throw new BusinessException("该订单未分配给您，无法揽收");
         }
         sp.setStatus("COLLECTED");
         baseMapper.updateById(sp);

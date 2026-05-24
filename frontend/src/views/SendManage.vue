@@ -54,7 +54,7 @@
           <el-input-number v-model="approveForm.weight" :min="0" :precision="3" style="width: 100%;" />
         </el-form-item>
         <el-form-item label="费用">
-          <span>￥{{ calcFee(approveForm.weight) }}</span>
+          <el-input :model-value="'￥' + calcFee(approveForm.weight).toFixed(2)" readonly style="width: 100%;" />
         </el-form-item>
         <el-form-item label="取件方式">
           <span>{{ approveForm.pickupMethod === 'DOOR_PICKUP' ? '上门取件' : '自行寄出' }}</span>

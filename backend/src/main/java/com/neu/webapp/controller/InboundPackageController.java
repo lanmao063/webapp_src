@@ -20,9 +20,9 @@ public class InboundPackageController {
     }
 
     @PutMapping("/{trackingNumber}/warehouse-entry")
-    public Result<Void> warehouseEntry(@PathVariable String trackingNumber) {
-        inboundPackageService.warehouseEntry(trackingNumber, UserContext.getCurrentUserId());
-        return Result.ok();
+    public Result<String> warehouseEntry(@PathVariable String trackingNumber) {
+        String pickupCode = inboundPackageService.warehouseEntry(trackingNumber, UserContext.getCurrentUserId());
+        return Result.ok(pickupCode);
     }
 
     @PutMapping("/{trackingNumber}/checkout")

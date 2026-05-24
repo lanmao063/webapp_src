@@ -114,6 +114,13 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
                 item.put("enterTime", null);
                 item.put("outTime", null);
             }
+
+            SendPackage sp = sendPackageMapper.selectOne(
+                    new QueryWrapper<SendPackage>().eq("package_id", pkg.getId()));
+            if (sp != null) {
+                item.put("sendStatus", sp.getStatus());
+            }
+
             list.add(item);
         }
         result.setRecords(list);

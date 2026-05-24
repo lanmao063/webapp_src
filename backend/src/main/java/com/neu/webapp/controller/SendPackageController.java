@@ -77,7 +77,7 @@ public class SendPackageController {
     public Result<IPage<SendPackage>> paidList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return Result.ok(sendPackageService.paidList(page, size));
+        return Result.ok(sendPackageService.paidList(UserContext.getCurrentUserId(), page, size));
     }
 
     @PutMapping("/{id}/collect")

@@ -75,8 +75,8 @@ VALUES (201, 'SP20260524A001', '手工饼干礼盒', 1.5, 15000,
         '张三', '13800001111', '北京市朝阳区1号',
         '赵六', '13800006666', '杭州市西湖区6号', '生日礼物');
 
-INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by)
-VALUES (201, 15.00, 0, 'SELF_DROP', '2026-05-25 上午', 'PENDING', 1);
+INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by, courier_id)
+VALUES (201, 15.00, 0, 'SELF_DROP', '2026-05-25 上午', 'SUBMITTED', 1, NULL);
 
 -- 寄件2: 李四寄出 → 已审核待付款
 INSERT INTO package (id, tracking_number, package_name, weight, volume,
@@ -86,8 +86,8 @@ VALUES (202, 'SP20260524A002', '秋冬外套', 3.0, 30000,
         '李四', '13800002222', '上海市浦东新区2号',
         '钱七', '13800007777', '南京市鼓楼区7号', NULL);
 
-INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by)
-VALUES (202, 15.00, 0, 'DOOR_PICKUP', '2026-05-25 下午', 'APPROVED', 2);
+INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by, courier_id)
+VALUES (202, 15.00, 0, 'DOOR_PICKUP', '2026-05-25 下午', 'APPROVED', 2, 4);
 
 -- 寄件3: 王五寄出 → 已付款待揽收
 INSERT INTO package (id, tracking_number, package_name, weight, volume,
@@ -97,8 +97,8 @@ VALUES (203, 'SP20260524A003', '机械键盘', 8.0, 8000,
         '王五', '13800003333', '广州市天河区3号',
         '孙八', '13800008888', '深圳市南山区8号', NULL);
 
-INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by)
-VALUES (203, 25.00, 1, 'DOOR_PICKUP', '2026-05-24 下午', 'PAID', 3);
+INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by, courier_id)
+VALUES (203, 25.00, 1, 'DOOR_PICKUP', '2026-05-24 下午', 'PAID', 3, 4);
 
 -- 寄件4: 张三寄出 → 已完成(已揽收)
 INSERT INTO package (id, tracking_number, package_name, weight, volume,
@@ -108,8 +108,8 @@ VALUES (204, 'SP20260523A004', '旧书一批', 12.0, 60000,
         '张三', '13800001111', '北京市朝阳区1号',
         '周九', '13800009999', '武汉市洪山区9号', NULL);
 
-INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by)
-VALUES (204, 40.00, 1, 'SELF_DROP', '2026-05-23 上午', 'COLLECTED', 1);
+INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by, courier_id)
+VALUES (204, 40.00, 1, 'SELF_DROP', '2026-05-23 上午', 'COLLECTED', 1, 4);
 
 -- 寄件5: 李四寄出 → 已驳回
 INSERT INTO package (id, tracking_number, package_name, weight, volume,
@@ -119,8 +119,8 @@ VALUES (205, 'SP20260523A005', '液体化妆品套装', 25.0, 5000,
         '李四', '13800002222', '上海市浦东新区2号',
         '吴十', '13800001010', '成都市锦江区10号', '内含液体，不确定能否寄送');
 
-INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by)
-VALUES (205, 75.00, 0, 'SELF_DROP', '2026-05-23 下午', 'REJECTED', 2);
+INSERT INTO send_package (package_id, fee, is_paid, pickup_method, appointment_time, status, created_by, courier_id)
+VALUES (205, 75.00, 0, 'SELF_DROP', '2026-05-23 下午', 'REJECTED', 2, NULL);
 
 -- ============================================================
 -- 4. 异常包裹 (error_parcel)
