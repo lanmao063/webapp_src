@@ -17,8 +17,8 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <el-table :data="tableData" stripe border style="width: 100%;">
+    <el-card class="table-card" shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe class="w-full">
         <el-table-column prop="trackingNumber" label="快递单号" min-width="160">
           <template #default="{ row }">
             <span v-html="highlightMatch(row.trackingNumber, searchForm.keyword)" />
@@ -58,14 +58,15 @@
             <el-tag v-else-if="row.sendStatus === 'APPROVED'" type="warning" size="small">待付款</el-tag>
             <el-tag v-else-if="row.sendStatus === 'SUBMITTED'" type="info" size="small">已提交</el-tag>
             <el-tag v-else-if="row.sendStatus === 'REJECTED'" type="danger" size="small">已驳回</el-tag>
-            <span v-else style="color:#909399;">运输中</span>
+            <span v-else class="text-secondary">运输中</span>
           </template>
         </el-table-column>
         <el-table-column prop="enterTime" label="入库时间" width="160">
           <template #default="{ row }">{{ row.enterTime || '-' }}</template>
         </el-table-column>
       </el-table>
-      <div class="pagination-wrapper">
+      <el-empty v-if="!loading && tableData.length === 0" description="暂无数据" />
+      <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -87,9 +88,11 @@ import request from '@/utils/request'
 
 const searchForm = reactive({ keyword: '' })
 const tableData = ref([])
+const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
 const fetchData = async () => {
+  loading.value = true
   try {
     const kw = searchForm.keyword.trim()
     const res = await request.get('/package/search', {
@@ -101,7 +104,7 @@ const fetchData = async () => {
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch {}
+  } catch {} finally { loading.value = false }
 }
 
 const escapeHtml = (text) => {
@@ -127,7 +130,7 @@ const handleReset = () => { searchForm.keyword = ''; pagination.currentPage = 1;
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
 .search-card { margin-bottom: 16px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+
 :deep(.highlight) {
   background-color: #fff3cd;
   color: #856404;

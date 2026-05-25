@@ -1,29 +1,28 @@
 <template>
-  <div class="welcome-container">
-    <!-- REGULAR: 普通用户 - 我的取件码 -->
-    <template v-if="role === 'REGULAR'">
-      <div style="width:100%;max-width:950px;margin-bottom:20px;">
-        <el-carousel height="180px" trigger="click">
-          <el-carousel-item v-for="i in 1" :key="i">
-            <div class="carousel-placeholder">
-              <el-icon :size="36"><Picture /></el-icon>
-              <p>走马灯区域 — 待添加内容</p>
-            </div>
-          </el-carousel-item>
-        </el-carousel>
+  <div class="welcome-container" v-loading="loading">
+    <!-- 欢迎横幅 -->
+    <el-card class="welcome-banner" shadow="never">
+      <div class="banner-content">
+        <el-icon :size="40" color="var(--color-primary)"><HomeFilled /></el-icon>
+        <div class="banner-text">
+          <h2>{{ greeting }}</h2>
+          <p class="banner-subtitle">欢迎使用莱鸟驿站管理系统</p>
+        </div>
       </div>
-      <el-row :gutter="20" style="width:100%;max-width:950px;margin-bottom:20px;" v-if="unpaidCount > 0">
-        <el-col :span="24">
-          <el-card shadow="hover" class="hint-card" @click="$router.push('/MyUnpaid')">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:15px;">您有 <strong style="color:#e6a23c;">{{ unpaidCount }}</strong> 笔待付款订单</span>
-              <el-button type="warning" size="small" @click.stop="$router.push('/MyUnpaid')">去付款</el-button>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      <h1>我的取件码</h1>
-      <el-table :data="pickupList" stripe border style="width: 100%; max-width: 950px; margin-top: 20px;">
+    </el-card>
+
+    <!-- 提示卡片（欠款/待审批/待揽收） -->
+    <el-card v-if="hintCard.show" shadow="hover" class="hint-card" @click="$router.push(hintCard.link)">
+      <div class="hint-content">
+        <span class="hint-text">{{ hintCard.text }}</span>
+        <el-button type="warning" size="small" @click.stop="$router.push(hintCard.link)">{{ hintCard.btnText }}</el-button>
+      </div>
+    </el-card>
+
+    <!-- REGULAR: 我的取件码 -->
+    <template v-if="role === 'REGULAR'">
+      <h2 class="section-title">我的取件码</h2>
+      <el-table :data="pickupList" stripe class="welcome-table" v-if="pickupList.length > 0">
         <el-table-column prop="pickupCode" label="取件码" width="150">
           <template #default="{ row }">
             <el-tag type="success" size="large">{{ row.pickupCode }}</el-tag>
@@ -36,7 +35,7 @@
               size="small"
               effect="dark"
             >
-              <strong v-if="row.cabinetType === 'LARGE'">大重件</strong>
+              <span v-if="row.cabinetType === 'LARGE'">大重件</span>
               <span v-else-if="row.cabinetType === 'MEDIUM'">中件</span>
               <span v-else>小件</span>
             </el-tag>
@@ -50,102 +49,44 @@
         <el-table-column label="代取人" width="140">
           <template #default="{ row }">
             <el-tag v-if="row.proxyPhone" type="info" size="small">{{ row.proxyPhone }}</el-tag>
-            <span v-else style="color: #909399;">-</span>
+            <span v-else class="text-secondary">-</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="100">
           <template #default="{ row }">
-            <el-button
-              type="warning"
-              size="small"
-              link
-              @click="openProxyDialog(row)"
-              :disabled="!!row.proxyPhone"
-            >
+            <el-button type="warning" size="small" link :disabled="!!row.proxyPhone" @click="openProxyDialog(row)">
               {{ row.proxyPhone ? '已设置' : '代取' }}
             </el-button>
           </template>
         </el-table-column>
       </el-table>
-      <p v-if="pickupList.length === 0" style="color:#909399;margin-top:40px;">暂无待取包裹</p>
+      <el-empty v-if="!loading && pickupList.length === 0" description="暂无待取包裹" />
     </template>
 
-    <!-- COURIER: 快递员 - 统计卡片 -->
+    <!-- COURIER: 统计卡片 -->
     <template v-if="role === 'COURIER'">
-      <div style="width:100%;max-width:600px;margin-bottom:20px;">
-        <el-carousel height="160px" trigger="click">
-          <el-carousel-item v-for="i in 1" :key="i">
-            <div class="carousel-placeholder">
-              <el-icon :size="36"><Picture /></el-icon>
-              <p>走马灯区域 — 待添加内容</p>
-            </div>
-          </el-carousel-item>
-        </el-carousel>
+      <h2 class="section-title">工作台</h2>
+      <div class="stat-grid" style="max-width: 500px;">
+        <el-card shadow="hover" class="stat-card">
+          <p class="stat-card-label">今日揽收</p>
+          <p class="stat-card-value" style="color: var(--color-primary);">{{ stats.todayDeliveries }}</p>
+        </el-card>
+        <el-card shadow="hover" class="stat-card">
+          <p class="stat-card-label">今日入库</p>
+          <p class="stat-card-value" style="color: var(--color-success);">{{ stats.todayWarehoused }}</p>
+        </el-card>
       </div>
-      <el-row :gutter="20" style="width:100%;max-width:600px;margin-bottom:20px;" v-if="pendingCollectCount > 0">
-        <el-col :span="24">
-          <el-card shadow="hover" class="hint-card" @click="$router.push('/PickupQuery')">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:15px;">您有 <strong style="color:#e6a23c;">{{ pendingCollectCount }}</strong> 笔待揽收订单</span>
-              <el-button type="warning" size="small" @click.stop="$router.push('/PickupQuery')">去揽收</el-button>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      <h1>工作台</h1>
-      <el-row :gutter="20" style="margin-top: 20px; width: 100%; max-width: 600px;">
-        <el-col :span="12">
-          <el-card shadow="hover">
-            <div style="text-align:center;">
-              <p style="color:#909399;font-size:14px;">今日揽收</p>
-              <h2 style="color:#409eff;">{{ stats.todayDeliveries }}</h2>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="12">
-          <el-card shadow="hover">
-            <div style="text-align:center;">
-              <p style="color:#909399;font-size:14px;">今日入库</p>
-              <h2 style="color:#67c23a;">{{ stats.todayWarehoused }}</h2>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
     </template>
 
-    <!-- MANAGER: 驿站管理员 - 概览卡片 -->
+    <!-- MANAGER: 管理概览 -->
     <template v-if="role === 'MANAGER'">
-      <div style="width:100%;max-width:900px;margin-bottom:20px;">
-        <el-carousel height="160px" trigger="click">
-          <el-carousel-item v-for="i in 1" :key="i">
-            <div class="carousel-placeholder">
-              <el-icon :size="36"><Picture /></el-icon>
-              <p>走马灯区域 — 待添加内容</p>
-            </div>
-          </el-carousel-item>
-        </el-carousel>
+      <h2 class="section-title">数据概览</h2>
+      <div class="stat-grid" style="max-width: 900px;">
+        <el-card v-for="card in cards" :key="card.label" shadow="hover" class="stat-card">
+          <p class="stat-card-label">{{ card.label }}</p>
+          <p class="stat-card-value" :style="{ color: card.color }">{{ card.value }}</p>
+        </el-card>
       </div>
-      <el-row :gutter="20" style="width:100%;max-width:900px;margin-bottom:20px;" v-if="pendingApprovalCount > 0">
-        <el-col :span="24">
-          <el-card shadow="hover" class="hint-card" @click="$router.push('/SendManage')">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:15px;">有 <strong style="color:#e6a23c;">{{ pendingApprovalCount }}</strong> 笔寄件申请待审批</span>
-              <el-button type="warning" size="small" @click.stop="$router.push('/SendManage')">去审批</el-button>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      <h1>数据概览</h1>
-      <el-row :gutter="20" style="margin-top: 20px; width: 100%; max-width: 900px;">
-        <el-col :span="6" v-for="card in cards" :key="card.label">
-          <el-card shadow="hover">
-            <div style="text-align:center;">
-              <p style="color:#909399;font-size:14px;">{{ card.label }}</p>
-              <h2 :style="{color:card.color}">{{ card.value }}</h2>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
     </template>
 
     <!-- 代取人设置对话框 -->
@@ -170,14 +111,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Picture } from '@element-plus/icons-vue'
+import { HomeFilled } from '@element-plus/icons-vue'
 import { getUserInfo } from '@/utils/auth'
 import request from '@/utils/request'
 
 const user = getUserInfo()
 const role = ref(user?.role || '')
+const loading = ref(true)
 
 const pickupList = ref([])
 const unpaidCount = ref(0)
@@ -192,15 +134,31 @@ const cards = reactive([
   { label: '未处理异常', value: 0, color: '#f56c6c' }
 ])
 
+const roleNameMap = { REGULAR: '用户', COURIER: '快递员', MANAGER: '管理员' }
+const greeting = computed(() => {
+  const name = roleNameMap[role.value] || '用户'
+  const hour = new Date().getHours()
+  const prefix = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好'
+  return `${prefix}，${name}`
+})
+
+const hintCard = computed(() => {
+  if (role.value === 'REGULAR' && unpaidCount.value > 0) {
+    return { show: true, text: `您有 ${unpaidCount.value} 笔待付款订单`, btnText: '去付款', link: '/MyUnpaid' }
+  }
+  if (role.value === 'COURIER' && pendingCollectCount.value > 0) {
+    return { show: true, text: `您有 ${pendingCollectCount.value} 笔待揽收订单`, btnText: '去揽收', link: '/PickupQuery' }
+  }
+  if (role.value === 'MANAGER' && pendingApprovalCount.value > 0) {
+    return { show: true, text: `有 ${pendingApprovalCount.value} 笔寄件申请待审批`, btnText: '去审批', link: '/SendManage' }
+  }
+  return { show: false, text: '', btnText: '', link: '' }
+})
+
 const proxyDialogVisible = ref(false)
 const proxyLoading = ref(false)
 const proxyFormRef = ref(null)
-const proxyForm = reactive({
-  id: null,
-  packageName: '',
-  pickupCode: '',
-  proxyPhone: ''
-})
+const proxyForm = reactive({ id: null, packageName: '', pickupCode: '', proxyPhone: '' })
 const proxyRules = {
   proxyPhone: [
     { required: true, message: '请输入代取人手机号', trigger: 'blur' },
@@ -224,45 +182,43 @@ const openProxyDialog = (row) => {
 
 const handleProxySubmit = async () => {
   if (!proxyFormRef.value) return
-  try {
-    await proxyFormRef.value.validate()
-  } catch {
-    return
-  }
+  try { await proxyFormRef.value.validate() } catch { return }
   proxyLoading.value = true
   try {
-    await request.put(`/inbound/${proxyForm.id}/authorize-proxy`, {
-      proxyPhone: proxyForm.proxyPhone
-    })
+    await request.put(`/inbound/${proxyForm.id}/authorize-proxy`, { proxyPhone: proxyForm.proxyPhone })
     ElMessage.success('代取人设置成功')
     proxyDialogVisible.value = false
     fetchPickupCodes()
   } catch {} finally { proxyLoading.value = false }
 }
 
-onMounted(() => {
-  if (role.value === 'REGULAR') {
-    fetchPickupCodes()
-    request.get('/send-package/my-unpaid', { params: { page: 1, size: 1 } }).then(res => {
+onMounted(async () => {
+  loading.value = true
+  try {
+    if (role.value === 'REGULAR') {
+      fetchPickupCodes()
+      const res = await request.get('/send-package/my-unpaid', { params: { page: 1, size: 1 } })
       unpaidCount.value = res.data.total || 0
-    }).catch(() => {})
-  } else if (role.value === 'COURIER') {
-    request.get('/statistics/courier-overview').then(res => {
-      Object.assign(stats, res.data)
-    }).catch(() => {})
-    request.get('/send-package/paid-list', { params: { page: 1, size: 1 } }).then(res => {
-      pendingCollectCount.value = res.data.total || 0
-    }).catch(() => {})
-  } else if (role.value === 'MANAGER') {
-    request.get('/statistics/overview').then(res => {
-      cards[0].value = res.data.totalInWarehouse
-      cards[1].value = res.data.totalPickedUp
-      cards[2].value = res.data.totalCollected
-      cards[3].value = res.data.unresolvedErrors
-    }).catch(() => {})
-    request.get('/send-package/pending-list', { params: { page: 1, size: 1 } }).then(res => {
-      pendingApprovalCount.value = res.data.total || 0
-    }).catch(() => {})
+    } else if (role.value === 'COURIER') {
+      const [overview, paid] = await Promise.all([
+        request.get('/statistics/courier-overview'),
+        request.get('/send-package/paid-list', { params: { page: 1, size: 1 } })
+      ])
+      Object.assign(stats, overview.data)
+      pendingCollectCount.value = paid.data.total || 0
+    } else if (role.value === 'MANAGER') {
+      const [overview, pending] = await Promise.all([
+        request.get('/statistics/overview'),
+        request.get('/send-package/pending-list', { params: { page: 1, size: 1 } })
+      ])
+      cards[0].value = overview.data.totalInWarehouse
+      cards[1].value = overview.data.totalPickedUp
+      cards[2].value = overview.data.totalCollected
+      cards[3].value = overview.data.unresolvedErrors
+      pendingApprovalCount.value = pending.data.total || 0
+    }
+  } catch {} finally {
+    loading.value = false
   }
 })
 </script>
@@ -271,30 +227,57 @@ onMounted(() => {
 .welcome-container {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
   height: 100%;
-  padding-top: 40px;
-  color: #606266;
+  padding-top: 24px;
 }
-.welcome-container h1 {
-  font-size: 28px;
-  margin-bottom: 16px;
+.section-title {
+  font-size: 22px;
+  margin: 20px 0 16px;
+  color: var(--color-text-primary);
 }
-.carousel-placeholder {
+.welcome-banner {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: var(--spacing-md);
+}
+.banner-content {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  background: #f5f7fa;
-  border-radius: 8px;
-  color: #c0c4cc;
+  gap: 16px;
+  padding: var(--spacing-sm) 0;
 }
-.carousel-placeholder p {
-  margin-top: 8px;
-  font-size: 14px;
+.banner-text h2 {
+  font-size: 20px;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
 }
-.hint-card { cursor: pointer; }
-.hint-card:hover { border-color: #409eff; }
+.banner-subtitle {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.hint-card {
+  width: 100%;
+  max-width: 900px;
+  margin-bottom: var(--spacing-md);
+  cursor: pointer;
+}
+.hint-card:hover {
+  border-color: var(--color-primary);
+}
+.hint-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hint-text {
+  font-size: 15px;
+}
+
+.welcome-table {
+  width: 100%;
+  max-width: 950px;
+  margin-top: var(--spacing-sm);
+}
 </style>

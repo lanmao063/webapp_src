@@ -1,20 +1,20 @@
 <template>
   <div>
-    <el-breadcrumb separator="/">
+    <el-breadcrumb separator="/" class="page-breadcrumb">
       <el-breadcrumb-item :to="{ path: '/Welcome' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>设置</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card style="margin-top: 20px; max-width: 500px;">
-      <template #header><span style="font-size: 16px; font-weight: bold;">更改头像</span></template>
+    <el-card class="settings-card">
+      <template #header><span class="card-header-text">更改头像</span></template>
 
-      <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 10px;">
+      <div class="avatar-preview">
         <el-avatar :src="getAvatarUrl(selectedAvatar)" :size="72">
           {{ getAvatarUrl(selectedAvatar) ? '' : (userInfo?.username?.charAt(0) || 'U') }}
         </el-avatar>
         <div>
-          <p style="margin: 0; font-size: 14px; color: #909399;">从下方选择头像</p>
-          <p style="margin: 4px 0 0; font-size: 12px; color: #c0c4cc;">点击即可选中</p>
+          <p class="avatar-hint">从下方选择头像</p>
+          <p class="avatar-sub-hint">点击即可选中</p>
         </div>
       </div>
 
@@ -26,7 +26,7 @@
           :class="{ selected: selectedAvatar === av.key }"
           @click="selectedAvatar = av.key"
         >
-          <el-image :src="av.url" fit="cover" style="width: 56px; height: 56px; border-radius: 50%;" />
+          <el-image :src="av.url" fit="cover" class="avatar-thumb" />
         </div>
         <div
           class="avatar-item default-item"
@@ -34,14 +34,14 @@
           @click="selectedAvatar = ''"
         >
           <el-avatar :size="56">{{ userInfo?.username?.charAt(0) || 'U' }}</el-avatar>
-          <span style="font-size: 11px; color: #909399; margin-top: 4px;">默认</span>
+          <span class="default-label">默认</span>
         </div>
       </div>
     </el-card>
 
-    <el-card style="margin-top: 20px; max-width: 500px;">
+    <el-card class="settings-card">
       <template #header>
-        <span style="font-size: 16px; font-weight: bold;">个人信息</span>
+        <span class="card-header-text">个人信息</span>
       </template>
 
       <el-form :model="form" ref="formRef" label-width="80px" :rules="formRules">
@@ -131,7 +131,6 @@ const handleSave = async () => {
     ElMessage.success('个人信息修改成功')
     window.dispatchEvent(new Event('user-profile-updated'))
   } catch {
-    // error handled by interceptor
   } finally {
     saving.value = false
   }
@@ -139,6 +138,38 @@ const handleSave = async () => {
 </script>
 
 <style scoped>
+.settings-card {
+  margin-top: 20px;
+  max-width: 500px;
+}
+.card-header-text {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+/* Avatar section */
+.avatar-preview {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+.avatar-hint {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+.avatar-sub-hint {
+  margin: 4px 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-placeholder);
+}
+.avatar-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+}
+
 .avatar-grid {
   display: flex;
   flex-wrap: wrap;
@@ -150,12 +181,24 @@ const handleSave = async () => {
   flex-direction: column;
   align-items: center;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   border: 2px solid transparent;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
-.avatar-item:hover { border-color: #c0c4cc; }
-.avatar-item.selected { border-color: #409eff; background: #ecf5ff; }
-.avatar-item.default-item { min-width: 70px; }
+.avatar-item:hover {
+  border-color: var(--color-text-placeholder);
+}
+.avatar-item.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.avatar-item.default-item {
+  min-width: 72px;
+}
+.default-label {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
 </style>

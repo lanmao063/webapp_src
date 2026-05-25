@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" v-loading="loading">
     <el-breadcrumb separator="/" class="breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>寄件详情</el-breadcrumb-item>
@@ -53,19 +53,16 @@
             </div>
             <div class="timeline-line" v-if="idx < timeline.length - 1" :class="{ filled: node.active }"></div>
             <div class="timeline-content">
-              <span class="timeline-label" :style="{ color: node.active ? '#303133' : '#c0c4cc' }">{{ node.label }}</span>
+              <span class="timeline-label" :class="node.active ? 'text-primary' : 'text-muted'">{{ node.label }}</span>
               <span class="timeline-time" v-if="node.time">{{ node.time }}</span>
-              <span class="timeline-time" v-else style="color:#c0c4cc;">未到达</span>
+              <span class="timeline-time text-muted" v-else>未到达</span>
             </div>
           </div>
         </div>
       </el-card>
     </div>
 
-    <el-card v-else shadow="never" style="text-align:center;padding:60px 0;">
-      <el-icon :size="40" color="#c0c4cc"><Loading /></el-icon>
-      <p style="color:#909399;">加载中...</p>
-    </el-card>
+    <el-empty v-if="!loading && !order" description="暂无数据" />
   </div>
 </template>
 
@@ -73,11 +70,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Loading, CircleCheck } from '@element-plus/icons-vue'
+import { CircleCheck } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 
 const route = useRoute()
 const order = ref(null)
+const loading = ref(false)
 
 const statusLabelMap = {
   SUBMITTED: '已提交',
@@ -118,11 +116,14 @@ onMounted(async () => {
     ElMessage.error('缺少订单编号')
     return
   }
+  loading.value = true
   try {
     const res = await request.get(`/send-package/${id}`)
     order.value = res.data
   } catch {
     ElMessage.error('获取订单详情失败')
+  } finally {
+    loading.value = false
   }
 })
 </script>
@@ -203,4 +204,6 @@ onMounted(async () => {
 .timeline-node .timeline-line.filled {
   background: #67c23a;
 }
+.text-primary { color: #303133; }
+.text-muted { color: #c0c4cc; }
 </style>

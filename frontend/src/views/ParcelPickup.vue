@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" v-loading="loading">
     <el-breadcrumb separator="/" class="breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>取件</el-breadcrumb-item>
@@ -16,7 +16,7 @@
       </el-form>
     </el-card>
 
-    <el-card shadow="never" v-if="pkgInfo" style="margin-top: 16px;">
+    <el-card shadow="never" v-if="pkgInfo" class="result-card">
       <template #header><span>包裹信息</span></template>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="快递单号">{{ pkgInfo.trackingNumber }}</el-descriptions-item>
@@ -31,7 +31,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="入库时间">{{ pkgInfo.enterTime || '-' }}</el-descriptions-item>
       </el-descriptions>
-      <div style="margin-top: 16px; text-align: center;">
+      <div class="pickup-action">
         <el-button type="success" size="large" @click="handlePickup" :loading="loading">
           确认出库
         </el-button>
@@ -111,4 +111,6 @@ const handlePickup = async () => {
 <style scoped>
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
+.result-card { margin-top: 16px; }
+.pickup-action { margin-top: 16px; text-align: center; }
 </style>

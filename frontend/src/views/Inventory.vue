@@ -1,22 +1,18 @@
 <template>
-  <div class="page-container">
-    <el-breadcrumb separator="/" class="breadcrumb">
+  <div class="page-container" v-loading="loading">
+    <el-breadcrumb separator="/" class="page-breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>库存盘点</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-row :gutter="20" style="margin-bottom: 16px;">
-      <el-col :span="6" v-for="card in cards" :key="card.label">
-        <el-card shadow="hover">
-          <div style="text-align:center;">
-            <p style="color:#909399;font-size:14px;">{{ card.label }}</p>
-            <h2 :style="{color:card.color}">{{ card.value }}</h2>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div class="stat-grid">
+      <el-card v-for="card in cards" :key="card.label" shadow="hover" class="stat-card">
+        <p class="stat-card-label">{{ card.label }}</p>
+        <p class="stat-card-value" :style="{ color: card.color }">{{ card.value }}</p>
+      </el-card>
+    </div>
 
-    <el-card shadow="never" style="margin-bottom: 16px;">
+    <el-card shadow="never" class="year-card">
       <el-form inline>
         <el-form-item label="年份">
           <el-input-number v-model="year" :min="2020" :max="2030" @change="fetchChart" />
@@ -24,21 +20,24 @@
       </el-form>
     </el-card>
 
-    <el-card shadow="never">
+    <el-card shadow="never" v-loading="chartLoading">
       <template #header><span>{{ year }}年 月度统计</span></template>
-      <div ref="chartRef" style="height: 400px;"></div>
+      <div ref="chartRef" class="chart-container"></div>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import request from '@/utils/request'
 
-const year = ref(2026)
+const year = ref(new Date().getFullYear())
 const chartRef = ref(null)
+const loading = ref(false)
+const chartLoading = ref(false)
 let chartInstance = null
+let resizeHandler = null
 
 const cards = reactive([
   { label: '在库包裹', value: 0, color: '#e6a23c' },
@@ -58,6 +57,7 @@ const fetchOverview = async () => {
 }
 
 const fetchChart = async () => {
+  chartLoading.value = true
   try {
     const res = await request.get('/statistics/chart', { params: { year: year.value } })
     const { labels, enterData, pickupData } = res.data
@@ -74,18 +74,38 @@ const fetchChart = async () => {
         { name: '取件', type: 'line', data: pickupData, color: '#67c23a' }
       ]
     })
-  } catch {}
+  } catch {} finally {
+    chartLoading.value = false
+  }
 }
 
-watch(year, () => fetchChart())
+onMounted(async () => {
+  loading.value = true
+  await fetchOverview()
+  await nextTick()
+  await fetchChart()
+  loading.value = false
 
-onMounted(() => {
-  fetchOverview()
-  nextTick(() => fetchChart())
+  resizeHandler = () => chartInstance?.resize()
+  window.addEventListener('resize', resizeHandler)
+})
+
+onUnmounted(() => {
+  if (chartInstance) {
+    chartInstance.dispose()
+    chartInstance = null
+  }
+  if (resizeHandler) {
+    window.removeEventListener('resize', resizeHandler)
+  }
 })
 </script>
 
 <style scoped>
-.page-container { padding: 0; }
-.breadcrumb { margin-bottom: 16px; }
+.chart-container {
+  height: 400px;
+}
+.year-card {
+  margin-bottom: var(--spacing-md);
+}
 </style>

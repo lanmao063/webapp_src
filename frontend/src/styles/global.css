@@ -1,0 +1,123 @@
+@import './variables.css';
+
+/* === Page layout utilities === */
+.page-container {
+  padding: 0;
+}
+.page-breadcrumb {
+  margin-bottom: var(--spacing-md);
+}
+.page-search-card {
+  margin-bottom: var(--spacing-md);
+}
+.page-pagination {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-md);
+}
+
+/* === Auth pages === */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+}
+.auth-card {
+  width: 420px;
+  max-width: 90vw;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, .08);
+}
+.auth-title {
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-xxl);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.auth-subtitle {
+  text-align: center;
+  margin-top: -12px;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.auth-links {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+/* === Stat cards (Welcome + Inventory) === */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+.stat-card {
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+}
+.stat-card-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+}
+.stat-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* === Text utilities === */
+.text-center {
+  text-align: center;
+}
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+.text-muted {
+  color: var(--color-text-placeholder);
+}
+
+/* === Spacing utilities === */
+.mt-sm {
+  margin-top: var(--spacing-sm);
+}
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+.mt-lg {
+  margin-top: var(--spacing-lg);
+}
+.w-full {
+  width: 100%;
+}
+
+/* === Fade transition === */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--transition-normal);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* === Page transition === */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}

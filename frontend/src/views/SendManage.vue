@@ -76,23 +76,16 @@
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
+import { calcFee } from '@/utils/fee'
 
 const tableData = ref([])
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 const dialogVisible = ref(false)
 const loading = ref(false)
-const timeSlots = ['08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00','13:00-14:00','14:00-15:00','15:00-16:00','16:00-17:00','17:00-18:00']
-
 const approveForm = reactive({
   id: null, packageName: '', weight: null,
   pickupMethod: 'SELF_DROP', appointmentTime: ''
 })
-
-const calcFee = (w) => {
-  if (!w || w <= 0) return 10
-  if (w <= 1) return 10; if (w <= 5) return 15; if (w <= 10) return 25; if (w <= 20) return 40
-  return Math.round(60 + (w - 20) * 3)
-}
 
 const fetchData = async () => {
   try {

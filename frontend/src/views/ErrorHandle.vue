@@ -5,9 +5,9 @@
       <el-breadcrumb-item>异常处理</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card class="table-card" shadow="never">
+    <el-card class="table-card" shadow="never" v-loading="tableLoading">
       <template #header><span>待处理异常列表</span></template>
-      <el-table :data="tableData" stripe border style="width: 100%;">
+      <el-table :data="tableData" stripe class="w-full">
         <el-table-column prop="id" label="编号" width="80" />
         <el-table-column prop="trackingNumber" label="快递单号" min-width="160" />
         <el-table-column prop="errorType" label="异常类型" width="120" />
@@ -20,7 +20,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-wrapper">
+      <el-empty v-if="!tableLoading && tableData.length === 0" description="暂无数据" />
+      <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -56,19 +57,21 @@ import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
 const tableData = ref([])
+const tableLoading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 const dialogVisible = ref(false)
 const loading = ref(false)
 const handleForm = reactive({ id: null, trackingNumber: '', errorType: '', handleResult: '' })
 
 const fetchData = async () => {
+  tableLoading.value = true
   try {
     const res = await request.get('/error-parcel/list', {
       params: { status: 'UNRESOLVED', page: pagination.currentPage, size: pagination.pageSize }
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch {}
+  } catch {} finally { tableLoading.value = false }
 }
 
 const openHandleDialog = (row) => {
@@ -95,5 +98,5 @@ fetchData()
 <style scoped>
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+
 </style>

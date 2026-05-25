@@ -17,8 +17,8 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <el-table :data="tableData" stripe border style="width: 100%;">
+    <el-card class="table-card" shadow="never" v-loading="loading">
+      <el-table :data="tableData" stripe class="w-full">
         <el-table-column prop="trackingNumber" label="快递单号" min-width="160" />
         <el-table-column prop="packageName" label="包裹名称" width="120">
           <template #default="{ row }">{{ row.packageName || '-' }}</template>
@@ -33,7 +33,8 @@
           <template #default="{ row }">{{ row.autoCheckoutTime || '-' }}</template>
         </el-table-column>
       </el-table>
-      <div class="pagination-wrapper">
+      <el-empty v-if="!loading && tableData.length === 0" description="暂无数据" />
+      <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -55,9 +56,11 @@ import request from '@/utils/request'
 
 const searchForm = reactive({ keyword: '' })
 const tableData = ref([])
+const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
 const fetchData = async () => {
+  loading.value = true
   try {
     const res = await request.get('/inbound/auto-checkout-list', {
       params: {
@@ -68,7 +71,7 @@ const fetchData = async () => {
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch {}
+  } catch {} finally { loading.value = false }
 }
 
 const handleSearch = () => { pagination.currentPage = 1; fetchData() }
@@ -80,5 +83,5 @@ fetchData()
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
 .search-card { margin-bottom: 16px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+
 </style>

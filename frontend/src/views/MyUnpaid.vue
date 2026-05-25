@@ -5,9 +5,9 @@
       <el-breadcrumb-item>待付款订单</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card class="table-card" shadow="never">
+    <el-card class="table-card" shadow="never" v-loading="loading">
       <template #header><span>我的待付款订单</span></template>
-      <el-table :data="tableData" stripe border style="width: 100%;">
+      <el-table :data="tableData" stripe class="w-full">
         <el-table-column prop="trackingNumber" label="快递单号" width="200" />
         <el-table-column prop="packageName" label="包裹名称" width="120" />
         <el-table-column prop="weight" label="重量(kg)" width="100" />
@@ -30,7 +30,8 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-wrapper">
+      <el-empty v-if="!loading && tableData.length === 0" description="暂无数据" />
+      <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -52,16 +53,18 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '@/utils/request'
 
 const tableData = ref([])
+const loading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 
 const fetchData = async () => {
+  loading.value = true
   try {
     const res = await request.get('/send-package/my-unpaid', {
       params: { page: pagination.currentPage, size: pagination.pageSize }
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch {}
+  } catch {} finally { loading.value = false }
 }
 
 const handlePay = async (row) => {
@@ -81,5 +84,5 @@ fetchData()
 <style scoped>
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+.page-pagination { display: flex; justify-content: flex-end; margin-top: 16px; }
 </style>

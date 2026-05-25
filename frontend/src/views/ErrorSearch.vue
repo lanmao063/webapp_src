@@ -16,8 +16,8 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <el-table :data="tableData" stripe border style="width: 100%;">
+    <el-card class="table-card" shadow="never" v-loading="tableLoading">
+      <el-table :data="tableData" stripe class="w-full">
         <el-table-column prop="id" label="编号" width="80" />
         <el-table-column prop="trackingNumber" label="快递单号" min-width="160" />
         <el-table-column prop="errorType" label="异常类型" width="120" />
@@ -35,11 +35,12 @@
         <el-table-column label="操作" width="140" fixed="right">
           <template #default="{ row }">
             <el-button v-if="row.status === 'UNRESOLVED'" type="primary" size="small" link @click="openHandleDialog(row)">处理</el-button>
-            <span v-else style="color:#909399;font-size:12px;">{{ row.handlerName || '-' }} 处理</span>
+            <span v-else class="text-secondary" style="font-size: 12px;">{{ row.handlerName || '-' }} 处理</span>
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-wrapper">
+      <el-empty v-if="!tableLoading && tableData.length === 0" description="暂无数据" />
+      <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
@@ -76,19 +77,21 @@ import request from '@/utils/request'
 
 const statusFilter = ref('')
 const tableData = ref([])
+const tableLoading = ref(false)
 const pagination = reactive({ currentPage: 1, pageSize: 10, total: 0 })
 const dialogVisible = ref(false)
 const loading = ref(false)
 const handleForm = reactive({ id: null, trackingNumber: '', errorType: '', handleResult: '' })
 
 const fetchData = async () => {
+  tableLoading.value = true
   try {
     const res = await request.get('/error-parcel/list', {
       params: { status: statusFilter.value, page: pagination.currentPage, size: pagination.pageSize }
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch {}
+  } catch {} finally { tableLoading.value = false }
 }
 
 const openHandleDialog = (row) => {
@@ -116,5 +119,5 @@ fetchData()
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
 .search-card { margin-bottom: 16px; }
-.pagination-wrapper { display: flex; justify-content: flex-end; margin-top: 16px; }
+
 </style>

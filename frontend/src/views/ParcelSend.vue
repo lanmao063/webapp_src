@@ -5,20 +5,20 @@
       <el-breadcrumb-item>寄件</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card shadow="never">
+    <el-card shadow="never" v-loading="loading">
       <template #header><span>寄件信息</span></template>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="110px">
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="包裹类型" prop="packageName">
-              <el-select v-model="form.packageName" placeholder="请选择包裹类型" style="width: 100%;">
+              <el-select v-model="form.packageName" placeholder="请选择包裹类型" class="w-full">
                 <el-option v-for="pt in packageTypes" :key="pt.value" :label="pt.label" :value="pt.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="重量(kg)" prop="weight">
-              <el-input-number v-model="form.weight" :min="0" :precision="3" style="width: 100%;" />
+              <el-input-number v-model="form.weight" :min="0" :precision="3" class="w-full" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -63,7 +63,7 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="预约时间" v-if="form.pickupMethod === 'DOOR_PICKUP'" prop="appointmentTime">
-          <el-select v-model="form.appointmentTime" placeholder="请选择上门时间段" style="width: 250px;">
+          <el-select v-model="form.appointmentTime" placeholder="请选择上门时间段" class="w-250">
             <el-option v-for="t in timeSlots" :key="t" :label="t" :value="t" />
           </el-select>
         </el-form-item>
@@ -77,21 +77,21 @@
       </el-form>
     </el-card>
 
-    <el-card shadow="never" style="margin-top:16px">
+    <el-card shadow="never" class="mt-md">
       <template #header><span>收费表</span></template>
-      <el-table :data="feeTable" border style="width: 100%;">
+      <el-table :data="feeTable" class="w-full">
         <el-table-column prop="range" label="重量范围" />
         <el-table-column prop="fee" label="费用" />
       </el-table>
     </el-card>
 
-    <el-card shadow="never" style="margin-top:16px" v-if="result">
+    <el-card shadow="never" class="mt-md" v-if="result">
       <template #header><span>寄件结果</span></template>
       <el-descriptions :column="2" border>
         <el-descriptions-item label="快递单号">{{ result.trackingNumber }}</el-descriptions-item>
         <el-descriptions-item label="费用">￥{{ result.fee }}</el-descriptions-item>
       </el-descriptions>
-      <el-button type="primary" style="margin-top:12px;" @click="$router.push(`/SendDetail?id=${result.id}`)">查看详情</el-button>
+      <el-button type="primary" class="mt-btn" @click="$router.push(`/SendDetail?id=${result.id}`)">查看详情</el-button>
     </el-card>
   </div>
 </template>
@@ -101,6 +101,7 @@ import { reactive, ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { getUserInfo } from '@/utils/auth'
+import { calcFee, feeTable } from '@/utils/fee'
 
 const formRef = ref(null)
 const loading = ref(false)
@@ -138,19 +139,7 @@ watch(() => form.pickupMethod, (val) => {
   }
 })
 
-const estimatedFee = computed(() => {
-  const w = form.weight; if (!w || w <= 0) return 10
-  if (w <= 1) return 10; if (w <= 5) return 15; if (w <= 10) return 25; if (w <= 20) return 40
-  return Math.round(60 + (w - 20) * 3)
-})
-
-const feeTable = [
-  { range: '0 - 1 kg', fee: '¥10' },
-  { range: '1 - 5 kg', fee: '¥15' },
-  { range: '5 - 10 kg', fee: '¥25' },
-  { range: '10 - 20 kg', fee: '¥40' },
-  { range: '20 kg 以上', fee: '¥60 + 3/kg' }
-]
+const estimatedFee = computed(() => calcFee(form.weight))
 
 const rules = computed(() => ({
   packageName: [{ required: true, message: '请选择包裹类型', trigger: 'change' }],
@@ -192,4 +181,6 @@ const handleSubmit = async () => {
 <style scoped>
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
+.w-250 { width: 250px; }
+.mt-btn { margin-top: 12px; }
 </style>

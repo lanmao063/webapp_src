@@ -5,14 +5,14 @@
       <el-breadcrumb-item>异常登记</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card shadow="never" style="max-width: 550px;">
+    <el-card shadow="never" class="form-card" v-loading="loading">
       <template #header><span>登记包裹异常</span></template>
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="快递单号" prop="trackingNumber">
           <el-input v-model="form.trackingNumber" placeholder="请输入快递单号" />
         </el-form-item>
         <el-form-item label="异常类型" prop="errorType">
-          <el-select v-model="form.errorType" placeholder="请选择异常类型" style="width: 100%;">
+          <el-select v-model="form.errorType" placeholder="请选择异常类型" class="w-full">
             <el-option label="包裹破损" value="DAMAGED" />
             <el-option label="包裹丢失" value="LOST" />
             <el-option label="地址错误" value="WRONG_ADDRESS" />
@@ -60,4 +60,5 @@ const handleSubmit = async () => {
 <style scoped>
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
+.form-card { max-width: 550px; }
 </style>

@@ -5,7 +5,7 @@
       <el-breadcrumb-item>包裹入库</el-breadcrumb-item>
     </el-breadcrumb>
 
-    <el-card shadow="never">
+    <el-card shadow="never" v-loading="loading">
       <template #header><span>包裹入库</span></template>
       <el-form :model="form" label-width="110px" @keyup.enter="handleEntry">
         <el-form-item label="快递单号">

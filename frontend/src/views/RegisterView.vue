@@ -1,7 +1,10 @@
 <template>
-  <div class="register-container">
-    <el-card class="register-card">
-      <h2 class="register-title">用户注册</h2>
+  <div class="auth-container">
+    <el-card class="auth-card">
+      <div class="auth-title">
+        <el-icon :size="36" color="var(--color-primary)"><UserFilled /></el-icon>
+        <h2>用户注册</h2>
+      </div>
       <el-form :model="registerForm" :rules="rules" ref="formRef" label-width="80px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="registerForm.username" placeholder="小于12字" maxlength="12" clearable />
@@ -13,7 +16,7 @@
           <el-input v-model="registerForm.repassword" type="password" placeholder="请再次输入密码" maxlength="20" show-password clearable />
         </el-form-item>
         <el-form-item label="角色" prop="role">
-          <el-select v-model="registerForm.role" placeholder="请选择角色" style="width: 100%;">
+          <el-select v-model="registerForm.role" placeholder="请选择角色" class="w-full">
             <el-option label="普通用户" value="REGULAR" />
             <el-option label="快递员" value="COURIER" />
             <el-option label="驿站管理员" value="MANAGER" />
@@ -26,10 +29,10 @@
           <el-input v-model="registerForm.phone" placeholder="请输入手机号" clearable />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleRegister" :loading="loading" style="width: 100%;">注册</el-button>
+          <el-button type="primary" @click="handleRegister" :loading="loading" class="w-full">注册</el-button>
         </el-form-item>
       </el-form>
-      <div class="register-links">
+      <div class="auth-links">
         <el-button type="primary" link @click="$router.push('/login')">返回登录</el-button>
       </div>
     </el-card>
@@ -40,6 +43,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { UserFilled } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -107,24 +111,4 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-.register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f5f7fa;
-}
-.register-card {
-  width: 450px;
-  padding: 20px;
-}
-.register-title {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #409eff;
-}
-.register-links {
-  display: flex;
-  justify-content: center;
-}
 </style>

@@ -1,7 +1,10 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
-      <h2 class="login-title">快递驿站管理系统</h2>
+  <div class="auth-container">
+    <el-card class="auth-card">
+      <div class="auth-title">
+        <el-icon :size="36" color="var(--color-primary)"><Box /></el-icon>
+        <h2>莱鸟</h2>
+      </div>
       <el-tabs v-model="activeTab" class="login-tabs" @tab-change="handleTabChange">
         <el-tab-pane label="用户登录" name="login">
           <el-form :model="loginForm" :rules="rules" ref="formRef" label-width="80px">
@@ -12,7 +15,7 @@
               <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password clearable />
             </el-form-item>
             <el-form-item label="角色" prop="role">
-              <el-select v-model="loginForm.role" placeholder="请选择角色" style="width: 100%;">
+              <el-select v-model="loginForm.role" placeholder="请选择角色" class="w-full">
                 <el-option label="普通用户" value="REGULAR" />
                 <el-option label="快递员" value="COURIER" />
                 <el-option label="驿站管理员" value="MANAGER" />
@@ -22,7 +25,7 @@
               <el-checkbox v-model="loginForm.rememberMe">记住密码</el-checkbox>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handleLogin" :loading="loading" style="width: 100%;">登录</el-button>
+              <el-button type="primary" @click="handleLogin" :loading="loading" class="w-full">登录</el-button>
             </el-form-item>
           </el-form>
           <div class="login-links">
@@ -46,7 +49,7 @@
               <el-input v-model="checkoutForm.phone" placeholder="请输入收件人手机号" clearable @keyup.enter="handleCheckoutQuery" />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handleCheckoutQuery" :loading="checkoutLoading" style="width: 100%;">
+              <el-button type="primary" @click="handleCheckoutQuery" :loading="checkoutLoading" class="w-full">
                 查询包裹
               </el-button>
             </el-form-item>
@@ -67,7 +70,7 @@
               </el-descriptions-item>
               <el-descriptions-item label="入库时间">{{ checkoutPackageInfo.enterTime }}</el-descriptions-item>
             </el-descriptions>
-            <el-button type="success" @click="handleCheckoutConfirm" :loading="checkoutLoading" style="width: 100%; margin-top: 12px;">
+            <el-button type="success" @click="handleCheckoutConfirm" :loading="checkoutLoading" class="w-full" style="margin-top: 12px;">
               确认出库
             </el-button>
           </div>
@@ -100,6 +103,7 @@
 import { reactive, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Box } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 import { setUserInfo, saveCredentials, getSavedCredentials, clearCredentials } from '@/utils/auth'
 
@@ -265,50 +269,30 @@ const cabinetLabel = (type) => {
 </script>
 
 <style scoped>
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f5f7fa;
-}
-.login-card {
-  width: 480px;
-  padding: 20px;
-}
-.login-title {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #409eff;
-}
 .login-tabs {
   margin-top: -10px;
 }
-.login-links {
-  display: flex;
-  justify-content: space-between;
-}
 .package-info-card {
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
   padding: 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
+  background: var(--color-bg-hover);
+  border-radius: var(--radius-md);
 }
 .checkout-result {
-  margin-top: 16px;
+  margin-top: var(--spacing-md);
 }
 .result-detail {
   margin-top: 12px;
   padding: 12px;
   background: #f0f9eb;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
 }
 .result-detail p {
   margin: 6px 0;
-  font-size: 14px;
+  font-size: var(--font-size-base);
 }
 .remaining-list {
-  margin-top: 8px;
+  margin-top: var(--spacing-sm);
 }
 .remaining-item {
   display: flex;
@@ -317,16 +301,16 @@ const cabinetLabel = (type) => {
   margin: 6px 0;
   padding: 6px 10px;
   background: #fdf6ec;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 .remaining-tracking {
-  font-size: 13px;
-  color: #909399;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
 }
 .result-tip {
   text-align: center;
-  font-size: 12px;
-  color: #c0c4cc;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-placeholder);
   margin-top: 12px;
 }
 </style>

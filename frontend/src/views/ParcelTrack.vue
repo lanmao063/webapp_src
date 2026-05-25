@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="page-container" v-loading="loading">
     <el-breadcrumb separator="/" class="breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>查件</el-breadcrumb-item>
@@ -35,13 +35,15 @@
           <el-tag v-else-if="parcel.sendStatus === 'APPROVED'" type="warning" size="small">待付款</el-tag>
           <el-tag v-else-if="parcel.sendStatus === 'SUBMITTED'" type="info" size="small">已提交</el-tag>
           <el-tag v-else-if="parcel.sendStatus === 'REJECTED'" type="danger" size="small">已驳回</el-tag>
-          <span v-else style="color:#909399;">运输中</span>
+          <span v-else class="text-secondary">运输中</span>
         </el-descriptions-item>
         <el-descriptions-item label="入库时间">{{ parcel.enterTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="取件时间">{{ parcel.outTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="备注">{{ parcel.notes || '-' }}</el-descriptions-item>
       </el-descriptions>
     </el-card>
+
+    <el-empty v-if="searched && !loading && !parcel" description="未找到该包裹" />
   </div>
 </template>
 
@@ -52,17 +54,23 @@ import request from '@/utils/request'
 
 const searchForm = reactive({ trackingNumber: '' })
 const parcel = ref(null)
+const loading = ref(false)
+const searched = ref(false)
 
 const handleSearch = async () => {
   if (!searchForm.trackingNumber) {
     ElMessage.warning('请输入快递单号')
     return
   }
+  loading.value = true
   try {
     const res = await request.get('/package/track', { params: { trackingNumber: searchForm.trackingNumber } })
     parcel.value = res.data
   } catch {
     parcel.value = null
+  } finally {
+    loading.value = false
+    searched.value = true
   }
 }
 </script>
@@ -71,4 +79,5 @@ const handleSearch = async () => {
 .page-container { padding: 0; }
 .breadcrumb { margin-bottom: 16px; }
 .search-card { margin-bottom: 16px; }
+.text-secondary { color: #909399; }
 </style>
