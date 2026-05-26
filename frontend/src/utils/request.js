@@ -7,7 +7,7 @@ const request = axios.create({
   timeout: 15000,
   withCredentials: true
 })
-
+//响应拦截器，每个通过 request 发出的 API 调用，后端返回的数据先经过拦截器处理，然后才交给调用方。
 request.interceptors.response.use(
   response => {
     const data = response.data

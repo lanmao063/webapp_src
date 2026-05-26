@@ -8,8 +8,8 @@
 
   /* Neutral grays */
   --color-bg-page: #f0f2f5;
-  --color-bg-card: #ffffff;
-  --color-bg-hover: #f5f7fa;
+  --color-bg-card: rgba(246, 247, 249, 0.90);
+  --color-bg-hover: rgba(240, 241, 244, 0.95);
   --color-border: #e4e7ed;
   --color-border-light: #ebeef5;
 

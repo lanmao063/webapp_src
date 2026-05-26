@@ -30,7 +30,7 @@
         </el-table-column>
         <el-table-column prop="createdAt" label="报告时间" width="160" />
       </el-table>
-      <el-empty v-if="!loading && tableData.length === 0" description="暂无数据" />
+      <el-empty v-if="!loading && tableData.length === 0" :image="getEmptyImage('empty2')" description="暂无异常记录" :image-size="200" />
       <div class="page-pagination">
         <el-pagination
           v-model:current-page="pagination.currentPage"
@@ -49,6 +49,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { getEmptyImage } from '@/utils/empty'
 import request from '@/utils/request'
 
 const tableData = ref([])

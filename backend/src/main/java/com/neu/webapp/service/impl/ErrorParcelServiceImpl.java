@@ -26,10 +26,10 @@ public class ErrorParcelServiceImpl extends ServiceImpl<ErrorParcelMapper, Error
     public ErrorParcelServiceImpl(PackageMapper packageMapper, SystemUserMapper systemUserMapper) {
         this.packageMapper = packageMapper;
         this.systemUserMapper = systemUserMapper;
-    }
+    }//注入
 
     @Override
-    @Transactional
+    @Transactional//登记异常
     public ErrorParcel registerError(String trackingNumber, String errorType, String description, String reportedBy) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
@@ -47,7 +47,7 @@ public class ErrorParcelServiceImpl extends ServiceImpl<ErrorParcelMapper, Error
     }
 
     @Override
-    @Transactional
+    @Transactional//管理员处理异常
     public void handleError(Long id, String handlerName, String handleResult) {
         ErrorParcel error = baseMapper.selectById(id);
         if (error == null) {
@@ -60,7 +60,7 @@ public class ErrorParcelServiceImpl extends ServiceImpl<ErrorParcelMapper, Error
         baseMapper.updateById(error);
     }
 
-    @Override
+    @Override//管理员查询异常记录
     public IPage<ErrorParcel> search(String status, int page, int size) {
         QueryWrapper<ErrorParcel> wrapper = new QueryWrapper<>();
         if (status != null && !status.isEmpty()) {
@@ -86,7 +86,7 @@ public class ErrorParcelServiceImpl extends ServiceImpl<ErrorParcelMapper, Error
         return result;
     }
 
-    @Override
+    @Override//用户查询自己提交的异常记录
     public IPage<ErrorParcel> myErrors(String username, int page, int size) {
         QueryWrapper<ErrorParcel> wrapper = new QueryWrapper<>();
         wrapper.eq("reported_by", username).orderByDesc("created_at");

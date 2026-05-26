@@ -154,24 +154,24 @@ router.beforeEach((to, from, next) => {
 
   if (to.meta.noAuth) {
     if (user && to.path === '/login') {
-      next('/Welcome')
+      next('/Welcome')//已经登录，不允许访问登录页，重定向到欢迎页
     } else {
-      next()
+      next()//放行
     }
     return
   }
 
   if (!user) {
-    next('/login')
+    next('/login')//未登录，重定向到登录页
     return
   }
 
   if (to.meta.role && user.role !== to.meta.role) {
-    next('/Welcome')
+    next('/Welcome')//直接在地址栏输地址但是角色权限不够，重定向到欢迎页
     return
   }
 
-  next()
+  next()//其余的都放行
 })
 
 router.afterEach(() => {

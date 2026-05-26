@@ -26,7 +26,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         this.inboundPackageMapper = inboundPackageMapper;
         this.sendPackageMapper = sendPackageMapper;
         this.errorParcelMapper = errorParcelMapper;
-    }
+    }//注入
 
     @Override
     public Map<String, Object> getOverview() {
@@ -46,7 +46,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         stats.put("totalCollected", totalCollected);
         stats.put("unresolvedErrors", unresolvedErrors);
         return stats;
-    }
+    }//总览统计
 
     @Override
     public List<Map<String, Object>> getYearlyStats() {
@@ -71,7 +71,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             result.add(item);
         }
         return result;
-    }
+    }//年度统计，用于生成年度柱状图
 
     @Override
     public List<Map<String, Object>> getMonthlyStats(int year) {
@@ -99,7 +99,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             result.add(item);
         }
         return result;
-    }
+    }//月度统计，用于生成月度柱状图
 
     @Override
     public Map<String, Object> getCourierOverview(Long courierId) {
@@ -118,7 +118,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         stats.put("todayDeliveries", todayCollected);
         stats.put("todayWarehoused", todayWarehoused);
         return stats;
-    }
+    }//快递员统计，显示当天的派件和揽件数量
 
     @Override
     public Map<String, Object> getChartData(int year) {
@@ -136,5 +136,5 @@ public class StatisticsServiceImpl implements StatisticsService {
         chart.put("enterData", enterData);
         chart.put("pickupData", pickupData);
         return chart;
-    }
+    }//生成图表数据接口，前端调用后直接渲染柱状图
 }

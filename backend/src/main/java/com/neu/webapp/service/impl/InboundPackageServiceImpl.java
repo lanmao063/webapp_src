@@ -27,7 +27,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
     public InboundPackageServiceImpl(PackageMapper packageMapper, SystemUserMapper systemUserMapper) {
         this.packageMapper = packageMapper;
         this.systemUserMapper = systemUserMapper;
-    }
+    }//注入
 
     @Override
     @Transactional
@@ -44,7 +44,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         }
         if ("IN_WAREHOUSE".equals(inbound.getStatus())) {
             throw new BusinessException("该包裹已入库，请勿重复操作");
-        }
+        }//校验包裹状态
 
         // 根据体积确定柜型 → 生成取件码
         double volume = pkg.getVolume() != null ? pkg.getVolume() : 0;
@@ -64,7 +64,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
 
         String pickupCode = String.format("%02d-%d-%04d",
                 cabinetNum,
-                (int)(Math.random() * 9) + 1,
+                (int)(Math.random() * 5) + 1,//1-5
                 (int)(Math.random() * 9000) + 1000);
 
         inbound.setPickupCode(pickupCode);
@@ -72,12 +72,12 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         inbound.setStatus("IN_WAREHOUSE");
         inbound.setEnteredBy(courierId);
         inbound.setEnterTime(LocalDateTime.now());
-        baseMapper.updateById(inbound);
+        baseMapper.updateById(inbound);//更新入库信息
         return pickupCode;
     }
 
     @Override
-    @Transactional
+    @Transactional//出库
     public void checkout(String trackingNumber, Long userId) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
@@ -94,7 +94,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
                 throw new BusinessException("该包裹已出库");
             }
             throw new BusinessException("该包裹未入库，请先完成入库操作");
-        }
+        }//校验包裹状态
 
         SystemUser user = systemUserMapper.selectById(userId);
         if (user == null || user.getPhone() == null) {
@@ -108,14 +108,14 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         String proxyPhone = inbound.getProxyPhone();
         if (!userPhone.equals(receiverPhone) && !userPhone.equals(proxyPhone)) {
             throw new BusinessException("该包裹收件人手机号与您的手机号不匹配，这不是您的包裹");
-        }
+        }//校验取件人的权限
 
         inbound.setStatus("CHECKED_OUT");
         inbound.setOutTime(LocalDateTime.now());
-        baseMapper.updateById(inbound);
+        baseMapper.updateById(inbound);//更新包裹状态
     }
 
-    @Override
+    @Override//查询我的取件码列表
     public List<Map<String, Object>> myPickupCodes(Long userId) {
         SystemUser user = systemUserMapper.selectById(userId);
         if (user == null || user.getPhone() == null) {
@@ -126,7 +126,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         List<InboundPackage> inbounds = baseMapper.selectList(
                 new QueryWrapper<InboundPackage>()
                         .eq("status", "IN_WAREHOUSE")
-                        .isNotNull("pickup_code"));
+                        .isNotNull("pickup_code"));//只查询在库且已生成取件码的所有包裹
 
         List<Map<String, Object>> result = new ArrayList<>();
         for (InboundPackage ib : inbounds) {
@@ -145,11 +145,11 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
             item.put("proxyPhone", ib.getProxyPhone());
             item.put("enterTime", ib.getEnterTime());
             result.add(item);
-        }
+        }//将符合条件的包裹信息组装成列表返回
         return result;
     }
 
-    @Override
+    @Override//设置代取人
     public void authorizeProxy(Long id, Long userId, String proxyPhone) {
         InboundPackage inbound = baseMapper.selectById(id);
         if (inbound == null) {
@@ -179,7 +179,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         baseMapper.updateById(inbound);
     }
 
-    @Override
+    @Override//用户查询包裹信息
     public Map<String, Object> searchByTrackingNumber(String trackingNumber, Long userId) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
@@ -211,7 +211,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         return item;
     }
 
-    @Override
+    @Override//用户凭运单号+手机号查询已入库包裹的取件信息
     public Map<String, Object> publicSearch(String trackingNumber, String phone) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
@@ -243,7 +243,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
     }
 
     @Override
-    @Transactional
+    @Transactional//出库功能，但不要求用户登录，只要输入手机号和单号即可验证权限并完成出库
     public Map<String, Object> publicCheckout(String trackingNumber, String phone) {
         Package pkg = packageMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
@@ -302,7 +302,7 @@ public class InboundPackageServiceImpl extends ServiceImpl<InboundPackageMapper,
         return result;
     }
 
-    @Override
+    @Override//管理员查询自动出库的包裹列表，支持根据快递单号、收件人姓名、收件人手机号模糊搜索
     public IPage<Map<String, Object>> searchAutoCheckout(String keyword, int page, int size) {
         QueryWrapper<InboundPackage> wrapper = new QueryWrapper<>();
         wrapper.eq("is_auto_checkout", 1);

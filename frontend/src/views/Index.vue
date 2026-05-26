@@ -7,7 +7,7 @@
             <Fold v-if="!isCollapse" />
             <Expand v-else />
           </el-icon>
-          <el-icon class="header-logo" :size="28"><Monitor /></el-icon>
+          <img src="@/assets/logo.png" alt="logo" class="header-logo-img" />
           <h1 class="header-title">莱鸟</h1>
         </div>
         <div class="header-right">
@@ -107,7 +107,7 @@ import request from '@/utils/request'
 import { getAvatarUrl } from '@/utils/avatar'
 import { getRandomBackground } from '@/utils/background'
 import {
-  Monitor, HomeFilled, Van, Search, Postcard, Promotion, Document,
+  HomeFilled, Van, Search, Postcard, Promotion, Document,
   Money, Warning, CirclePlus, Box, DataAnalysis, Checked, List,
   DataBoard, EditPen, Clock, Setting, Fold, Expand
 } from '@element-plus/icons-vue'
@@ -196,8 +196,10 @@ const logout = async () => {
 .collapse-btn:hover {
   color: #fff;
 }
-.header-logo {
-  color: rgba(255, 255, 255, .9);
+.header-logo-img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
 }
 .header-title {
   font-size: 20px;

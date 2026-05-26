@@ -34,6 +34,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="tableData.length === 0" :image="getEmptyImage('empty3')" description="暂无待审批" :image-size="200" />
       <div class="pagination-wrapper">
         <el-pagination
           v-model:current-page="pagination.currentPage"
@@ -75,6 +76,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getEmptyImage } from '@/utils/empty'
 import request from '@/utils/request'
 import { calcFee } from '@/utils/fee'
 

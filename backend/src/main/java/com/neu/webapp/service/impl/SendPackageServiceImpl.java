@@ -35,8 +35,9 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     @Transactional
     public SendPackage createSendPackage(SendPackageRequest request, Long userId) {
         Package pkg = new Package();
-        pkg.setTrackingNumber("SP" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
+        pkg.setTrackingNumber("SF" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"))
                 + UUID.randomUUID().toString().substring(0, 4).toUpperCase());
+                //生成唯一的运单号，格式为SF+年月日时分秒+4位随机字符串（20位）
         pkg.setPackageName(request.getPackageName());
         pkg.setWeight(request.getWeight());
         pkg.setVolume(request.getVolume());
@@ -47,7 +48,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         pkg.setReceiverPhone(request.getReceiverPhone());
         pkg.setReceiverAddress(request.getReceiverAddress());
         pkg.setNotes(request.getNotes());
-        packageMapper.insert(pkg);
+        packageMapper.insert(pkg);//将包裹基本信息保存到Package表中
 
         SendPackage sp = new SendPackage();
         sp.setPackageId(pkg.getId());
@@ -58,13 +59,14 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         sp.setIsPaid(0);
         sp.setFee(calculateFee(pkg.getWeight()));
         baseMapper.insert(sp);
+        //将订单信息保存到SendPackage表中，初始状态为SUBMITTED，未支付
 
-        // populate transient fields for return
+        //补全sendpackage中的包裹相关字段，方便后续前端查询展示
         populatePackageFields(sp, pkg);
         return sp;
     }
 
-    @Override
+    @Override//管理员搜索订单接口，支持根据运单号、寄件人/收件人姓名、电话模糊搜索，并可筛选订单状态
     public IPage<SendPackage> search(String keyword, String status, int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
@@ -91,7 +93,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         return result;
     }
 
-    @Override
+    @Override//获取待审核订单列表
     public IPage<SendPackage> pendingList(int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
         wrapper.eq("status", "SUBMITTED").orderByDesc("created_at");
@@ -101,7 +103,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     @Override
-    @Transactional
+    @Transactional//审批订单接口，管理员可以审批通过或驳回订单，审批通过后自动分配快递员
     public void approve(Long id, SendPackage updateData, Long managerId) {
         SendPackage sp = baseMapper.selectById(id);
         if (sp == null) {
@@ -132,6 +134,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     @Override
+    @Transactional//驳回订单接口，管理员可以驳回待审核的订单
     public void reject(Long id, Long managerId) {
         SendPackage sp = baseMapper.selectById(id);
         if (sp == null) {
@@ -144,7 +147,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         baseMapper.updateById(sp);
     }
 
-    @Override
+    @Override//用户未付款查找
     public IPage<SendPackage> myUnpaid(Long userId, int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
         wrapper.eq("created_by", userId).eq("status", "APPROVED").orderByDesc("created_at");
@@ -154,7 +157,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     @Override
-    @Transactional
+    @Transactional//用户支付
     public void pay(Long id, Long userId) {
         SendPackage sp = baseMapper.selectById(id);
         if (sp == null) {
@@ -172,7 +175,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
         baseMapper.updateById(sp);
     }
 
-    @Override
+    @Override//用于被选中的快递员查看已支付订单列表，方便揽收
     public IPage<SendPackage> paidList(Long courierId, int page, int size) {
         QueryWrapper<SendPackage> wrapper = new QueryWrapper<>();
         wrapper.eq("status", "PAID").eq("courier_id", courierId).orderByDesc("created_at");
@@ -182,7 +185,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     @Override
-    @Transactional
+    @Transactional//快递员揽收功能
     public void collect(Long id, Long courierId) {
         SendPackage sp = baseMapper.selectById(id);
         if (sp == null) {
@@ -200,6 +203,7 @@ public class SendPackageServiceImpl extends ServiceImpl<SendPackageMapper, SendP
     }
 
     private void fillPackageFields(SendPackage sp) {
+        // 通过 package_id 去 package 表查出完整数据，把字段拷贝到 SendPackage 对象上返回给前端。
         if (sp.getPackageId() != null) {
             Package pkg = packageMapper.selectById(sp.getPackageId());
             if (pkg != null) {

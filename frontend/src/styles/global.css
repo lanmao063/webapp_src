@@ -1,5 +1,28 @@
 @import './variables.css';
 
+/* === 全局半透明灰色底色 === */
+.el-card,
+.el-table,
+.el-table__header th,
+.el-table__body-wrapper,
+.el-menu,
+.el-dialog,
+.el-descriptions,
+.el-descriptions__body,
+.el-descriptions__body .el-descriptions__table,
+.el-drawer,
+.el-form-item__content .el-input__wrapper,
+.el-select .el-input__wrapper {
+  background-color: var(--color-bg-card) !important;
+}
+.el-table tr,
+.el-table td {
+  background-color: transparent !important;
+}
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background-color: var(--color-bg-hover) !important;
+}
+
 /* === Page layout utilities === */
 .page-container {
   padding: 0;

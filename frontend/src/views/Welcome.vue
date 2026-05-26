@@ -1,5 +1,14 @@
 <template>
   <div class="welcome-container" v-loading="loading">
+    <!-- 广告走马灯（仅普通用户） -->
+    <div v-if="role === 'REGULAR'" class="carousel-wrapper">
+      <el-carousel :interval="4000" arrow="always" height="100%" class="ad-carousel">
+        <el-carousel-item v-for="(ad, idx) in adList" :key="idx">
+          <div class="ad-item" :style="{ backgroundImage: `url(${ad.img})` }"></div>
+        </el-carousel-item>
+      </el-carousel>
+    </div>
+
     <!-- 欢迎横幅 -->
     <el-card class="welcome-banner" shadow="never">
       <div class="banner-content">
@@ -60,7 +69,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="!loading && pickupList.length === 0" description="暂无待取包裹" />
+      <el-empty v-if="!loading && pickupList.length === 0" :image="getEmptyImage('empty1')" description="暂无待取包裹" :image-size="200" />
     </template>
 
     <!-- COURIER: 统计卡片 -->
@@ -115,12 +124,21 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { HomeFilled } from '@element-plus/icons-vue'
 import { getUserInfo } from '@/utils/auth'
+import { getAds } from '@/utils/ads'
+import { getEmptyImage } from '@/utils/empty'
 import request from '@/utils/request'
 
 const user = getUserInfo()
 const role = ref(user?.role || '')
 const loading = ref(true)
 const realName = ref('')
+
+const adImages = getAds()
+const adList = reactive([
+  { tag: '快递寄件', desc: '足不出户，一键下单寄快递', img: adImages[0] },
+  { tag: '包裹追踪', desc: '实时掌握包裹动态，安心等待', img: adImages[1] },
+  { tag: '驿站服务', desc: '安全存放，随时取件更便捷', img: adImages[2] }
+])
 
 const pickupList = ref([])
 const unpaidCount = ref(0)
@@ -283,5 +301,25 @@ onMounted(async () => {
   width: 100%;
   max-width: 950px;
   margin-top: var(--spacing-sm);
+}
+
+/* === 广告走马灯 === */
+.carousel-wrapper {
+  width: 100%;
+  max-width: 720px;
+  aspect-ratio: 3 / 1;
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.ad-carousel {
+  height: 100%;
+}
+.ad-item {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
 }
 </style>

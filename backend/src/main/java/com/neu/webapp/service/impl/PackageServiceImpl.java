@@ -24,12 +24,13 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
     public PackageServiceImpl(InboundPackageMapper inboundPackageMapper, SendPackageMapper sendPackageMapper) {
         this.inboundPackageMapper = inboundPackageMapper;
         this.sendPackageMapper = sendPackageMapper;
-    }
+    }//依赖注入
 
     @Override
     public Map<String, Object> track(String trackingNumber) {
         Package pkg = baseMapper.selectOne(
                 new QueryWrapper<Package>().eq("tracking_number", trackingNumber));
+                //用trackingNumber查询主表，找出包裹信息
         if (pkg == null) {
             return null;
         }
@@ -46,9 +47,9 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
         result.put("receiverPhone", pkg.getReceiverPhone());
         result.put("receiverAddress", pkg.getReceiverAddress());
         result.put("notes", pkg.getNotes());
-        result.put("createdAt", pkg.getCreatedAt());
+        result.put("createdAt", pkg.getCreatedAt());//把主表中包裹的基本信息放到result里
 
-        // Check inbound status
+        //查inbound表，补全包裹信息
         InboundPackage inbound = inboundPackageMapper.selectOne(
                 new QueryWrapper<InboundPackage>().eq("package_id", pkg.getId()));
         if (inbound != null) {
@@ -59,7 +60,7 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
             result.put("outTime", inbound.getOutTime());
         }
 
-        // Check send status
+        //查send表，补全包裹信息
         SendPackage sp = sendPackageMapper.selectOne(
                 new QueryWrapper<SendPackage>().eq("package_id", pkg.getId()));
         if (sp != null) {
@@ -70,7 +71,7 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
         return result;
     }
 
-    @Override
+    @Override//实现搜索功能，支持模糊搜索多个字段，并返回分页结果
     public IPage<Map<String, Object>> search(String keyword, int page, int size) {
         QueryWrapper<Package> wrapper = new QueryWrapper<>();
         if (keyword != null && !keyword.isEmpty()) {
@@ -83,7 +84,7 @@ public class PackageServiceImpl extends ServiceImpl<PackageMapper, Package> impl
         }
         wrapper.orderByDesc("created_at");
         IPage<Package> pkgPage = baseMapper.selectPage(new Page<>(page, size), wrapper);
-
+        
         IPage<Map<String, Object>> result = new Page<>(page, size, pkgPage.getTotal());
         List<Map<String, Object>> list = new ArrayList<>();
         for (Package pkg : pkgPage.getRecords()) {
